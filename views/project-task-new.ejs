@@ -1,0 +1,66 @@
+<div class="mb-3">
+  <a href="/projects/<%= project.id %>" class="small d-block mb-1"><i class="bi bi-arrow-left"></i> <%= project.name %></a>
+  <h1 class="h4 mb-0">New Task</h1>
+  <div class="text-muted small">for <%= project.name %></div>
+</div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-body">
+        <% if (error) { %>
+          <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+
+        <form action="/projects/<%= project.id %>/tasks" method="POST">
+          <div class="mb-3">
+            <label class="form-label">Task name <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" value="<%= values.name || '' %>" required autofocus>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Type</label>
+              <select name="type" class="form-select">
+                <option value="">— Select —</option>
+                <% typeChoices.forEach(opt => { %>
+                  <option value="<%= opt %>" <%= values.type === opt ? 'selected' : '' %>><%= opt %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="">— Select —</option>
+                <% statusChoices.forEach(opt => { %>
+                  <option value="<%= opt %>" <%= values.status === opt ? 'selected' : '' %>><%= opt %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Date</label>
+              <input type="date" name="date" class="form-control" value="<%= values.date || '' %>">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Deadline</label>
+              <input type="date" name="deadline" class="form-control" value="<%= values.deadline || '' %>">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Details</label>
+            <textarea name="details" class="form-control" rows="3"><%= values.details || '' %></textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Task</button>
+            <a href="/projects/<%= project.id %>" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

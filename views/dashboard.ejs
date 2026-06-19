@@ -1,0 +1,117 @@
+<div class="mb-4">
+  <div class="text-muted small"><%= new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) %> &middot; Welcome back</div>
+  <h1 class="display-headline mb-0">Your <em>pipeline</em> today</h1>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-icon stat-icon-blue"><i class="bi bi-building"></i></div>
+        <div class="stat-value"><%= stats.companyCount %></div>
+        <div class="stat-label">Companies</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-icon stat-icon-purple"><i class="bi bi-briefcase"></i></div>
+        <div class="stat-value"><%= stats.openDealCount %></div>
+        <div class="stat-label">Open Deals</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-icon stat-icon-blue"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="stat-value">$<%= stats.openPipelineTotal.toLocaleString() %></div>
+        <div class="stat-label">Open Pipeline</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-icon stat-icon-gold"><i class="bi bi-trophy"></i></div>
+        <div class="stat-value">$<%= stats.wonTotal.toLocaleString() %></div>
+        <div class="stat-label">Closed Won</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <span class="dashboard-card-title">Pipeline by stage</span>
+          <div class="dashboard-card-subtitle">
+            <%= board.reduce((s, c) => s + c.deals.length, 0) %> deals &middot; $<%= board.reduce((s, c) => s + c.total, 0).toLocaleString() %> total value
+          </div>
+        </div>
+        <a href="/pipeline" class="btn btn-sm btn-light-pill">Open full pipeline <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="card-body">
+        <% const maxTotal = Math.max(1, ...board.map(c => c.total)); %>
+        <% board.forEach(col => { %>
+          <div class="stage-row">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="d-flex align-items-center">
+                <span class="stage-dot stage-dot-<%= col.stage.replace(/\s+/g,'') %>"></span>
+                <span class="stage-name"><%= col.stage %></span>
+                <span class="stage-count-pill ms-2"><%= col.deals.length %> deal<%= col.deals.length === 1 ? '' : 's' %></span>
+              </div>
+              <div class="stage-total"><%= col.total > 0 ? '$' + col.total.toLocaleString() : '$0' %></div>
+            </div>
+            <div class="stage-track">
+              <div class="stage-fill stage-fill-<%= col.stage.replace(/\s+/g,'') %>" style="width: <%= Math.round((col.total / maxTotal) * 100) %>%"></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="dashboard-card-title">Recent activity</span>
+        <span class="live-dot"><span class="dot"></span>Live</span>
+      </div>
+      <div class="card-body activity-timeline">
+        <% if (recentActivities.length === 0) { %>
+          <div class="text-muted small">No activity logged yet.</div>
+        <% } %>
+        <% recentActivities.forEach(a => { %>
+          <% const t = (a.type || '').toLowerCase(); %>
+          <% const icon = t.includes('call') ? 'bi-telephone' : t.includes('email') ? 'bi-envelope' : t.includes('linkedin') ? 'bi-linkedin' : t.includes('meet') ? 'bi-people' : 'bi-clock-history'; %>
+          <% const iconColor = t.includes('call') ? 'tl-blue' : t.includes('email') ? 'tl-purple' : t.includes('linkedin') ? 'tl-blue' : 'tl-gray'; %>
+          <div class="timeline-item">
+            <div class="timeline-icon <%= iconColor %>"><i class="bi <%= icon %>"></i></div>
+            <div class="timeline-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <span class="timeline-name"><%= a.name || '(untitled)' %></span>
+                <span class="timeline-date text-nowrap ms-2"><%= a.date %></span>
+              </div>
+              <div class="timeline-meta">
+                <% if (a.companyIds[0]) { %>
+                  <a href="/companies/<%= a.companyIds[0] %>" class="table-link"><%= a.companyNames.join(', ') || 'Unknown company' %></a>
+                <% } %>
+                <% if (a.type) { %><span class="ms-1"><%= a.companyIds[0] ? '·' : '' %> <%= a.type %></span><% } %>
+                <% if (a.projectNames && a.projectNames.length) { %>
+                  <span class="ms-1"><%= (a.companyIds[0] || a.type) ? '·' : '' %> <i class="bi bi-diagram-3"></i> <%= a.projectNames.join(', ') %></span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+      <div class="card-body pt-0">
+        <a href="/pipeline" class="btn-view-all">View all activity <i class="bi bi-arrow-up-right"></i></a>
+      </div>
+    </div>
+  </div>
+</div>

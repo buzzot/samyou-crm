@@ -1,0 +1,160 @@
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <a href="/companies" class="pnew-back-link mb-1"><i class="bi bi-arrow-left"></i> All companies</a>
+    <h1 class="h3 mb-0"><%= company.name %></h1>
+    <div class="text-muted">
+      <%= company.industry || '' %>
+      <% if (company.status) { %> &middot; <span class="badge company-status-<%= company.status.replace(/\s+/g,'') %>"><%= company.status %></span><% } %>
+    </div>
+  </div>
+  <% if (company.web) { %>
+    <a href="<%= company.web %>" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-box-arrow-up-right"></i> Website
+    </a>
+  <% } %>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-currency-dollar me-1"></i>Deals (<%= deals.length %>)</span>
+        <a href="/companies/<%= company.id %>/deals/new" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Create Deal</a>
+      </div>
+      <div class="data-table table-responsive mb-0">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr><th>Deal</th><th>Amount</th></tr>
+          </thead>
+          <tbody>
+            <% if (deals.length === 0) { %>
+              <tr><td colspan="2" class="muted-cell">No deals yet.</td></tr>
+            <% } %>
+            <% deals.forEach(d => { %>
+              <tr>
+                <td>
+                  <span class="row-icon"><i class="bi bi-currency-dollar"></i></span>
+                  <a href="/deals/<%= d.id %>" class="fw-semibold table-link"><%= d.name %></a>
+                  <div><span class="badge stage-badge stage-<%= (d.stage||'').replace(/\s+/g,'') %>"><%= d.stage %></span></div>
+                </td>
+                <td class="fw-semibold">$<%= (d.amount||0).toLocaleString() %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-people me-1"></i>Contacts (<%= persons.length %>)</span>
+        <a href="/companies/<%= company.id %>/contacts/new" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Contact</a>
+      </div>
+      <div class="data-table table-responsive mb-0">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr><th>Name</th><th>Contact</th></tr>
+          </thead>
+          <tbody>
+            <% if (persons.length === 0) { %>
+              <tr><td colspan="2" class="muted-cell">No contacts linked.</td></tr>
+            <% } %>
+            <% persons.forEach(p => { %>
+              <tr>
+                <td>
+                  <span class="row-icon"><i class="bi bi-person"></i></span>
+                  <a href="/contacts/<%= p.id %>" class="fw-semibold table-link"><%= p.fullName %></a>
+                  <div class="small text-muted"><%= p.title || '' %></div>
+                </td>
+                <td>
+                  <% if (p.email) { %><a href="mailto:<%= p.email %>" class="table-link"><%= p.email %></a><% } %>
+                  <% if (p.phone) { %><div class="small text-muted"><%= p.phone %></div><% } %>
+                  <% if (!p.email && !p.phone) { %><span class="muted-cell">—</span><% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-diagram-3 me-1"></i>Projects (<%= projects.length %>)</span>
+        <a href="/companies/<%= company.id %>/projects/new" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Create Project</a>
+      </div>
+      <div class="data-table table-responsive mb-0">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr><th>Project</th><th>Status</th></tr>
+          </thead>
+          <% if (projects.length === 0) { %>
+            <tbody><tr><td colspan="2" class="muted-cell">No projects linked.</td></tr></tbody>
+          <% } %>
+          <% projects.forEach(p => { %>
+            <tbody class="project-group">
+              <tr class="project-row">
+                <td>
+                  <span class="row-icon"><i class="bi bi-diagram-3"></i></span>
+                  <a href="/projects/<%= p.id %>" class="fw-semibold table-link"><%= p.name %></a>
+                  <div class="small text-muted"><%= p.category || '' %></div>
+                </td>
+                <td><% if (p.status) { %><span class="badge project-status-<%= p.status.replace(/\s+/g,'') %>"><%= p.status %></span><% } else { %><span class="muted-cell">—</span><% } %></td>
+              </tr>
+              <% p.activities.forEach(pa => { %>
+                <tr class="subtask-row">
+                  <td>
+                    <span class="subtask-indent"><i class="bi bi-arrow-return-right muted-cell me-2"></i></span>
+                    <a href="/tasks/<%= pa.id %>" class="btn btn-link btn-sm p-0 subtask-link">
+                      <%= pa.name || '(untitled)' %>
+                    </a>
+                    <% if (pa.emailSubject) { %><span class="text-muted small ms-1"><i class="bi bi-envelope"></i></span><% } %>
+                  </td>
+                  <td class="subtask-date text-muted"><%= pa.date || '' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          <% }) %>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-clock-history me-1"></i>Activities (<%= activities.length %>)</span>
+        <a href="/companies/<%= company.id %>/activities/new" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>New Activity</a>
+      </div>
+      <div class="data-table table-responsive mb-0">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr><th>Activity</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            <% if (activities.length === 0) { %>
+              <tr><td colspan="2" class="muted-cell">No activity logged yet.</td></tr>
+            <% } %>
+            <% activities.forEach(a => { %>
+              <tr>
+                <td>
+                  <span class="row-icon"><i class="bi bi-clock-history"></i></span>
+                  <a href="/activities/<%= a.id %>" class="btn btn-link btn-sm p-0 text-start">
+                    <%= a.name || '(untitled)' %>
+                  </a>
+                  <% if (a.projectNames && a.projectNames.length) { %>
+                    <div class="small text-muted"><i class="bi bi-diagram-3"></i> <%= a.projectNames.join(', ') %></div>
+                  <% } %>
+                  <% if (a.emailSubject) { %>
+                    <div class="small text-muted"><i class="bi bi-envelope"></i> <%= a.emailSubject %></div>
+                  <% } %>
+                </td>
+                <td class="small text-muted"><%= a.date || '' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

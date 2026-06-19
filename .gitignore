@@ -1,0 +1,8 @@
+node_modules/
+.env
+*.log
+.sessions/
+
+# Ad-hoc render-validation scratch scripts (not part of the app)
+test_*.js
+test*_tmp.js

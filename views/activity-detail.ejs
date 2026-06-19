@@ -1,0 +1,250 @@
+<div class="mb-3">
+  <% if (activity.companyIds && activity.companyIds.length) { %>
+    <a href="/companies/<%= activity.companyIds[0] %>" class="back-link mb-2"><i class="bi bi-arrow-left"></i> Back to company</a>
+  <% } %>
+  <div class="d-flex gap-2 mb-2 flex-wrap">
+    <% if (activity.type) { %>
+      <span class="pill-badge pill-badge-blue">
+        <% if (activity.type === 'Call') { %><i class="bi bi-telephone"></i>
+        <% } else if (activity.type === 'Email') { %><i class="bi bi-envelope"></i>
+        <% } else if (activity.type === 'LinkedIn') { %><i class="bi bi-linkedin"></i>
+        <% } else if (activity.type === 'Meeting' || activity.type === 'Demo') { %><i class="bi bi-camera-video"></i>
+        <% } else { %><i class="bi bi-clock-history"></i>
+        <% } %>
+        <%= activity.type.toUpperCase() %>
+      </span>
+    <% } %>
+    <% if (activity.result && activity.result.toLowerCase() !== (activity.type || '').toLowerCase()) { %>
+      <span class="pill-badge pill-badge-sky"><%= activity.result.toUpperCase() %></span>
+    <% } %>
+  </div>
+  <h1 class="activity-title mb-1"><%= activity.name || '(untitled)' %></h1>
+  <p class="text-muted small mb-0">Edit details below — changes are saved to this activity.</p>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card detail-form-card">
+      <div class="detail-form-section-header">
+        <i class="bi bi-pencil-square"></i><span>Details</span><span class="section-rule"></span>
+        <select name="result" form="activityForm" class="soft-input result-select-inline">
+          <option value="">— Result —</option>
+          <% resultChoices.forEach(opt => { %>
+            <option value="<%= opt %>" <%= activity.result === opt ? 'selected' : '' %>><%= opt %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="card-body pb-2">
+        <form id="activityForm" action="/activities/<%= activity.id %>" method="POST">
+          <div class="form-field-group mb-3">
+            <label class="field-label">Activity name <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="soft-input" value="<%= activity.name || '' %>" required>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="field-label"><i class="bi bi-tag"></i>Type</label>
+              <select name="type" class="soft-input">
+                <option value="">— Select —</option>
+                <% typeChoices.forEach(opt => { %>
+                  <option value="<%= opt %>" <%= activity.type === opt ? 'selected' : '' %>><%= opt %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="field-label"><i class="bi bi-calendar3"></i>Date</label>
+              <input type="date" name="date" class="soft-input" value="<%= activity.date || '' %>">
+            </div>
+          </div>
+
+          <div class="form-field-group mb-3">
+            <label class="field-label"><i class="bi bi-people"></i>Attendees</label>
+            <div class="chip-field" id="attendeesChipField">
+              <% (activity.attendeeIds||[]).forEach(id => {
+                   const p = persons.find(pp => pp.id === id); %>
+                <span class="chip" data-id="<%= id %>">
+                  <span class="chip-avatar"><%= ((p && p.fullName) || '?').trim().charAt(0).toUpperCase() %></span>
+                  <%= p ? p.fullName : id %>
+                  <input type="hidden" name="attendeeIds" value="<%= id %>">
+                  <button type="button" class="chip-remove" aria-label="Remove">&times;</button>
+                </span>
+              <% }) %>
+              <div class="chip-add-wrap">
+                <button type="button" class="chip-add-btn" data-target="attendeesChipField" data-field="attendeeIds" data-avatar="1"><i class="bi bi-plus-lg"></i> Add attendee</button>
+                <select class="chip-add-select d-none">
+                  <option value="">— Select —</option>
+                  <% persons.forEach(p => { %><option value="<%= p.id %>" data-name="<%= p.fullName %>"><%= p.fullName %></option><% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-field-group mb-3">
+            <label class="field-label"><i class="bi bi-kanban"></i>Related project(s)</label>
+            <div class="chip-field" id="projectsChipField">
+              <% (activity.projectIds||[]).forEach(id => {
+                   const pr = projects.find(pp => pp.id === id); %>
+                <span class="chip chip-link" data-id="<%= id %>">
+                  <%= pr ? pr.name : id %>
+                  <input type="hidden" name="projectIds" value="<%= id %>">
+                  <button type="button" class="chip-remove" aria-label="Remove">&times;</button>
+                </span>
+              <% }) %>
+              <div class="chip-add-wrap">
+                <button type="button" class="chip-add-btn" data-target="projectsChipField" data-field="projectIds"><i class="bi bi-plus-lg"></i> Link a project</button>
+                <select class="chip-add-select d-none">
+                  <option value="">— Select —</option>
+                  <% projects.forEach(p => { %><option value="<%= p.id %>" data-name="<%= p.name %>"><%= p.name %></option><% }) %>
+                </select>
+              </div>
+              <%
+                const activityCompanyId = (activity.companyIds || [])[0];
+                const createProjectHref = activityCompanyId ? `/companies/${activityCompanyId}/projects/new` : '/projects/new';
+              %>
+              <a href="<%= createProjectHref %>" class="chip-add-btn"><i class="bi bi-plus-lg"></i> Create project</a>
+            </div>
+          </div>
+
+          <div class="form-field-group mb-3">
+            <label class="field-label"><i class="bi bi-card-text"></i>Details</label>
+            <textarea name="details" class="soft-input" rows="7" id="activityDetailsTextarea"><%= activity.details || '' %></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <a href="/activities/<%= activity.id %>" class="btn-cancel-link">Cancel</a>
+      <button type="submit" form="activityForm" class="btn-save-changes"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+    </div>
+
+    <script>
+      (function () {
+        function refreshChipOptions(field, select) {
+          var usedIds = Array.from(field.querySelectorAll('.chip')).map(function (chip) {
+            return chip.dataset.id;
+          });
+          Array.from(select.options).forEach(function (opt) {
+            if (!opt.value) return;
+            opt.hidden = usedIds.indexOf(opt.value) !== -1;
+          });
+        }
+
+        document.querySelectorAll('.chip-add-btn').forEach(function (btn) {
+          var wrap = btn.parentElement;
+          var field = document.getElementById(btn.dataset.target);
+          var select = wrap.querySelector('.chip-add-select');
+          btn.addEventListener('click', function () {
+            refreshChipOptions(field, select);
+            btn.classList.add('d-none');
+            select.classList.remove('d-none');
+            select.focus();
+          });
+          select.addEventListener('change', function () {
+            var opt = select.options[select.selectedIndex];
+            if (!opt.value) return;
+            var field = document.getElementById(btn.dataset.target);
+            if (!field.querySelector('[data-id="' + opt.value + '"]')) {
+              var chip = document.createElement('span');
+              chip.className = 'chip' + (btn.dataset.avatar ? '' : ' chip-link');
+              chip.dataset.id = opt.value;
+              var avatarHtml = btn.dataset.avatar
+                ? '<span class="chip-avatar">' + opt.dataset.name.trim().charAt(0).toUpperCase() + '</span>'
+                : '';
+              chip.innerHTML = avatarHtml +
+                opt.dataset.name +
+                '<input type="hidden" name="' + btn.dataset.field + '" value="' + opt.value + '">' +
+                '<button type="button" class="chip-remove" aria-label="Remove">&times;</button>';
+              field.insertBefore(chip, wrap);
+              refreshChipOptions(field, select);
+            }
+            select.value = '';
+            select.classList.add('d-none');
+            btn.classList.remove('d-none');
+          });
+          select.addEventListener('blur', function () {
+            select.classList.add('d-none');
+            btn.classList.remove('d-none');
+          });
+        });
+
+        document.querySelectorAll('.chip-field').forEach(function (field) {
+          field.addEventListener('click', function (e) {
+            if (e.target.classList.contains('chip-remove')) {
+              e.target.closest('.chip').remove();
+            }
+          });
+        });
+      })();
+    </script>
+  </div>
+
+  <div class="col-lg-5">
+    <%
+      function noteTimeAgo(dateStr) {
+        if (!dateStr) return '';
+        const then = new Date(dateStr);
+        if (isNaN(then.getTime())) return dateStr;
+        const sec = Math.floor((Date.now() - then.getTime()) / 1000);
+        if (sec < 60) return 'just now';
+        const min = Math.floor(sec / 60);
+        if (min < 60) return min + 'm ago';
+        const hr = Math.floor(min / 60);
+        if (hr < 24) return hr + 'h ago';
+        const day = Math.floor(hr / 24);
+        if (day < 30) return day + 'd ago';
+        return then.toLocaleDateString();
+      }
+      const noteAvatarClasses = ['note-avatar-blue', 'note-avatar-purple', 'note-avatar-gray'];
+      const youInitial = ((typeof currentUser !== 'undefined' && currentUser && (currentUser.name || currentUser.email)) || '?').trim().charAt(0).toUpperCase();
+      const orderedComments = activity.comments.slice().reverse();
+    %>
+    <div class="card">
+      <div class="card-header fw-semibold"><i class="bi bi-chat-left-text me-1"></i>Comments (<%= activity.comments.length %>)</div>
+
+      <div class="card-body note-composer">
+        <form action="/activities/<%= activity.id %>/comments" method="POST">
+          <div class="note-compose-box">
+            <div class="d-flex gap-2">
+              <span class="note-avatar note-avatar-you"><%= youInitial %></span>
+              <textarea name="comment" class="note-textarea" rows="2" placeholder="Add a comment..." required></textarea>
+            </div>
+            <div class="note-compose-footer">
+              <div class="note-link-field">
+                <i class="bi bi-link-45deg"></i>
+                <input type="url" name="link" class="note-link-input-inline" placeholder="Optional link (e.g. to a file)">
+              </div>
+              <button type="submit" class="note-post-btn"><i class="bi bi-send-fill me-1"></i>Post comment</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="note-thread">
+        <% if (!activity.comments.length) { %>
+          <p class="text-muted mb-0">No comments yet.</p>
+        <% } %>
+        <% orderedComments.forEach((c, i) => { %>
+          <% const initial = (c.author || '?').trim().charAt(0).toUpperCase(); %>
+          <div class="note-item">
+            <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= initial %></span>
+            <div class="note-bubble">
+              <div class="d-flex justify-content-between align-items-baseline gap-2">
+                <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
+                <span class="text-muted small flex-shrink-0"><%= noteTimeAgo(c.postedAt) %></span>
+              </div>
+              <div class="note-text"><%= c.comment %></div>
+              <% if (c.link) { %>
+                <a href="<%= c.link %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-link-45deg"></i><%= c.link %></a>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,72 @@
+<div class="pnew-page">
+  <a href="/companies/<%= company.id %>" class="pnew-back-link"><i class="bi bi-arrow-left"></i> <%= company.name %></a>
+
+  <h1 class="pnew-hero">New <em>activity</em></h1>
+  <p class="pnew-hero-sub">for <%= company.name %></p>
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <div class="pnew-card">
+    <form action="/companies/<%= company.id %>/activities" method="POST">
+      <label class="pnew-field-label" for="activityName">Activity name <span class="pnew-required">*</span></label>
+      <input type="text" name="name" id="activityName" class="pnew-input mb-3" value="<%= values.name || '' %>" required autofocus>
+
+      <div class="pnew-classification-row mb-3">
+        <div>
+          <label class="pnew-field-label" for="activityType"><i class="bi bi-tag"></i> Type</label>
+          <select name="type" id="activityType" class="pnew-select">
+            <option value="">— Select —</option>
+            <% typeChoices.forEach(opt => { %>
+              <option value="<%= opt %>" <%= values.type === opt ? 'selected' : '' %>><%= opt %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label class="pnew-field-label" for="activityDate"><i class="bi bi-calendar3"></i> Date</label>
+          <input type="date" name="date" id="activityDate" class="pnew-input" value="<%= values.date || '' %>">
+        </div>
+      </div>
+
+      <label class="pnew-field-label" for="activityAttendees"><i class="bi bi-people"></i> Attendees</label>
+      <select name="attendeeIds" id="activityAttendees" class="pnew-select mb-1" multiple size="5">
+        <% persons.forEach(p => { %>
+          <option value="<%= p.id %>"><%= p.fullName %></option>
+        <% }) %>
+      </select>
+      <p class="pnew-help mb-3">Hold Ctrl/Cmd to select more than one.</p>
+
+      <label class="pnew-field-label" for="activityProjects"><i class="bi bi-kanban"></i> Related project(s)</label>
+      <select name="projectIds" id="activityProjects" class="pnew-select mb-3" multiple size="4">
+        <% projects.forEach(p => { %>
+          <option value="<%= p.id %>"><%= p.name %></option>
+        <% }) %>
+      </select>
+
+      <div class="pnew-classification-row mb-3">
+        <div>
+          <label class="pnew-field-label" for="activityRegarding"><i class="bi bi-clock"></i> Regarding</label>
+          <input type="datetime-local" name="regarding" id="activityRegarding" class="pnew-input" value="<%= values.regarding || '' %>">
+        </div>
+        <div>
+          <label class="pnew-field-label" for="activityResult"><i class="bi bi-flag"></i> Result</label>
+          <select name="result" id="activityResult" class="pnew-select">
+            <option value="">— Select —</option>
+            <% resultChoices.forEach(opt => { %>
+              <option value="<%= opt %>" <%= values.result === opt ? 'selected' : '' %>><%= opt %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <label class="pnew-field-label" for="activityDetails"><i class="bi bi-card-text"></i> Details</label>
+      <textarea name="details" id="activityDetails" class="pnew-textarea" rows="3"><%= values.details || '' %></textarea>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="pnew-btn-save"><i class="bi bi-check-lg"></i> Save activity</button>
+        <a href="/companies/<%= company.id %>" class="pnew-btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
