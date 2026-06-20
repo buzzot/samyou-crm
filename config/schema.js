@@ -174,6 +174,8 @@ module.exports = {
         activity: 'fldUu5YRaFLwbM3HI',
         deal: 'fldJfipTntKurG3J7',
         contact: 'fldToadgNohFbScz7',
+        project: 'fldunRVicUBJE5WbS',
+        attachment: 'fldl7jBSBavdrbJRF',
         postedAt: 'fldm9TvJ0IXEZgedq'
       }
     }

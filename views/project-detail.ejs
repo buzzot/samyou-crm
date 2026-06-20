@@ -17,6 +17,27 @@
   if (startLabel && endLabel) windowLabel = `${startLabel} – ${endLabel}`;
   else if (startLabel) windowLabel = `From ${startLabel}`;
   else if (endLabel) windowLabel = `Until ${endLabel}`;
+
+  function noteTimeAgo(iso) {
+    if (!iso) return '';
+    const then = new Date(iso);
+    if (isNaN(then.getTime())) return '';
+    const sec = Math.floor((Date.now() - then.getTime()) / 1000);
+    if (sec < 60) return 'just now';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return min + 'm ago';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr + 'h ago';
+    const day = Math.floor(hr / 24);
+    if (day < 30) return day + 'd ago';
+    return then.toLocaleDateString();
+  }
+  const noteAvatarClasses = ['note-avatar-blue', 'note-avatar-purple', 'note-avatar-gray'];
+  const youInitial = ((typeof currentUser !== 'undefined' && currentUser && (currentUser.name || currentUser.email)) || '?').trim().charAt(0).toUpperCase();
+  const orderedComments = (project.comments || []).slice().reverse();
+
+  const subtaskIds = new Set(project.subtasks.map(t => t.id));
+  const linkableTasks = (typeof allTasks !== 'undefined' ? allTasks : []).filter(t => !subtaskIds.has(t.id));
 %>
 
 <div class="pnew-page">
@@ -67,31 +88,6 @@
       </div>
 
       <div class="pnew-card">
-        <div class="pnew-products-header">
-          <div>
-            <h2 class="pnew-card-title">Subtasks</h2>
-            <p class="pnew-card-sub"><%= project.subtasks.length %> total</p>
-          </div>
-          <a href="/projects/<%= project.id %>/tasks/new" class="pnew-btn-new-product" style="text-decoration: none;"><i class="bi bi-plus-lg"></i> New task</a>
-        </div>
-        <% if (!project.subtasks.length) { %>
-          <div class="pnew-product-empty">No subtasks yet.</div>
-        <% } %>
-        <% project.subtasks.forEach(t => { %>
-          <div class="pnew-product-row" style="cursor: default;">
-            <div style="flex: 1; min-width: 0;">
-              <a href="/tasks/<%= t.id %>" class="pnew-product-name d-block text-truncate" style="text-decoration: none;"><%= t.name || '(untitled)' %></a>
-              <% if (t.owners && t.owners.length) { %>
-                <span class="pnew-product-sub"><%= t.owners.map(o => o.name).join(', ') %></span>
-              <% } %>
-            </div>
-            <% if (t.status) { %><span class="badge stage-badge"><%= t.status %></span><% } %>
-            <span class="pnew-product-sub"><%= t.deadline || t.date || '' %></span>
-          </div>
-        <% }) %>
-      </div>
-
-      <div class="pnew-card">
         <h2 class="pnew-card-title">Attachments</h2>
         <p class="pnew-card-sub"><%= project.attachments.length %> file<%= project.attachments.length === 1 ? '' : 's' %></p>
 
@@ -110,6 +106,49 @@
         </form>
       </div>
 
+      <div class="pnew-card">
+        <h2 class="pnew-card-title">Comments (<%= (project.comments || []).length %>)</h2>
+        <p class="pnew-card-sub">Notes and updates shared about this project.</p>
+
+        <form action="/projects/<%= project.id %>/comments" method="POST">
+          <div class="note-compose-box">
+            <div class="d-flex gap-2">
+              <span class="note-avatar note-avatar-you"><%= youInitial %></span>
+              <textarea name="comment" class="note-textarea" rows="2" placeholder="Add a comment..." required></textarea>
+            </div>
+            <div class="note-compose-footer">
+              <div class="note-link-field">
+                <i class="bi bi-link-45deg"></i>
+                <input type="url" name="link" class="note-link-input-inline" placeholder="Optional link (e.g. to a file)">
+              </div>
+              <button type="submit" class="note-post-btn"><i class="bi bi-send-fill me-1"></i>Post comment</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="note-thread">
+          <% if (!orderedComments.length) { %>
+            <p class="text-muted mb-0">No comments yet.</p>
+          <% } %>
+          <% orderedComments.forEach((c, i) => { %>
+            <% const cInitial = (c.author || '?').trim().charAt(0).toUpperCase(); %>
+            <div class="note-item">
+              <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= cInitial %></span>
+              <div class="note-bubble">
+                <div class="d-flex justify-content-between align-items-baseline gap-2">
+                  <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
+                  <span class="text-muted small flex-shrink-0"><%= noteTimeAgo(c.postedAt) %></span>
+                </div>
+                <div class="note-text"><%= c.comment %></div>
+                <% if (c.link) { %>
+                  <a href="<%= c.link %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-link-45deg"></i><%= c.link %></a>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
     </div>
 
     <div class="pnew-aside">
@@ -126,6 +165,43 @@
         <div class="pnew-summary-row"><span>Window</span><span><%= windowLabel %></span></div>
         <div class="pnew-summary-row"><span>Files</span><span><%= project.attachments.length %></span></div>
         <div class="pnew-summary-row"><span>Created</span><span><%= fmtCreated(project.createdAt) %></span></div>
+      </div>
+
+      <div class="pnew-card">
+        <h2 class="pnew-card-title">Related tasks</h2>
+        <p class="pnew-card-sub"><%= project.subtasks.length %> total</p>
+
+        <div class="pnew-product-list">
+          <% if (!project.subtasks.length) { %>
+            <div class="pnew-product-empty">No related tasks yet.</div>
+          <% } %>
+          <% project.subtasks.forEach(t => { %>
+            <a href="/tasks/<%= t.id %>" class="pnew-product-row" style="text-decoration: none;">
+              <span class="pnew-product-name"><%= t.name || '(untitled)' %></span>
+              <% if (t.status) { %><span class="pnew-product-sub"><%= t.status %></span><% } %>
+            </a>
+          <% }) %>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button type="button" class="pnew-btn-cancel" style="flex: 1; justify-content: center;" onclick="document.getElementById('linkTaskForm').style.display = document.getElementById('linkTaskForm').style.display === 'none' ? 'block' : 'none';"><i class="bi bi-link-45deg"></i> Link existing task</button>
+          <a href="/projects/<%= project.id %>/tasks/new" class="pnew-btn-save" style="flex: 1; justify-content: center; text-decoration: none;"><i class="bi bi-plus-lg"></i> New Task</a>
+        </div>
+
+        <div id="linkTaskForm" style="display: none;" class="mt-3">
+          <form action="/projects/<%= project.id %>/tasks/link" method="POST" class="d-flex gap-2">
+            <select name="taskId" class="pnew-select" required>
+              <option value="">— Select a task —</option>
+              <% linkableTasks.forEach(t => { %>
+                <option value="<%= t.id %>"><%= t.name || '(untitled)' %></option>
+              <% }) %>
+            </select>
+            <button type="submit" class="pnew-btn-save"><i class="bi bi-check-lg"></i></button>
+          </form>
+          <% if (!linkableTasks.length) { %>
+            <p class="text-muted small mb-0 mt-2">No other unlinked tasks available.</p>
+          <% } %>
+        </div>
       </div>
 
       <div class="pnew-tip-card">

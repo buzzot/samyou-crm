@@ -69,9 +69,12 @@ router.post('/projects', upload.array('attachments', 10), async (req, res, next)
 
 router.get('/projects/:id', async (req, res, next) => {
   try {
-    const project = await crm.getProjectDetail(req.params.id);
+    const [project, allTasks] = await Promise.all([
+      crm.getProjectDetail(req.params.id),
+      crm.listProjectActivities()
+    ]);
     if (!project.name) return res.status(404).render('error', { title: 'Not found', message: 'Project not found.' });
-    res.render('project-detail', { title: project.name, project });
+    res.render('project-detail', { title: project.name, project, allTasks });
   } catch (err) {
     next(err);
   }
@@ -158,6 +161,45 @@ router.post('/projects/:id/attachments', upload.array('attachments', 10), async 
   try {
     if (req.files && req.files.length) {
       await crm.addProjectAttachments(req.params.id, req.files);
+    }
+    res.redirect(`/projects/${req.params.id}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Post a note/comment on this project, attributed to the logged-in user.
+router.post('/projects/:id/comments', async (req, res, next) => {
+  try {
+    const { comment, link } = req.body;
+    const author = (req.session.user && req.session.user.name) || 'Someone';
+    await crm.addProjectComment({ projectId: req.params.id, author, comment, link });
+    res.redirect(`/projects/${req.params.id}`);
+  } catch (err) {
+    try {
+      const [project, allTasks] = await Promise.all([
+        crm.getProjectDetail(req.params.id),
+        crm.listProjectActivities()
+      ]);
+      return res.status(400).render('project-detail', {
+        title: project.name,
+        project,
+        allTasks,
+        error: err.message
+      });
+    } catch (err2) {
+      next(err2);
+    }
+  }
+});
+
+// Link an already-existing task to this project (the task keeps any other
+// project links it already has).
+router.post('/projects/:id/tasks/link', async (req, res, next) => {
+  try {
+    const { taskId } = req.body;
+    if (taskId) {
+      await crm.linkTaskToProject({ taskId, projectId: req.params.id });
     }
     res.redirect(`/projects/${req.params.id}`);
   } catch (err) {

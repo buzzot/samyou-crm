@@ -16,7 +16,7 @@ router.get('/auth/airtable/login', (req, res) => {
     const { verifier, challenge } = airtableAuth.generatePkce();
     const state = airtableAuth.generateState();
     req.session.oauth = { verifier, state };
-    const url = airtableAuth.buildAuthorizeUrl({ state, codeChallenge: challenge });
+    const url = airtableAuth.buildAuthorizeUrl({ state, codeChallenge: challenge, req });
     res.redirect(url);
   } catch (err) {
     res.render('login', { error: err.message, layout: false });
@@ -38,7 +38,7 @@ router.get('/auth/airtable/callback', async (req, res) => {
     }
     if (!code) throw new Error('Airtable did not return an authorization code.');
 
-    const token = await airtableAuth.exchangeCodeForToken({ code, codeVerifier: pending.verifier });
+    const token = await airtableAuth.exchangeCodeForToken({ code, codeVerifier: pending.verifier, req });
     const who = await airtableAuth.getWhoami(token.access_token);
     if (!who.email) {
       throw new Error('Airtable did not share your email address. Make sure the OAuth integration has the user.email:read scope.');

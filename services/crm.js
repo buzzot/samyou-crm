@@ -205,6 +205,8 @@ function mapTaskComment(rec) {
     activityIds: f.activity || [],
     dealIds: f.deal || [],
     contactIds: f.contact || [],
+    projectIds: f.project || [],
+    attachments: f.attachment || [],
     // Use Airtable's own record-creation timestamp (always a reliable UTC
     // ISO 8601 string) rather than the "postedAt" formula field, which only
     // returns locale-formatted text in the base's display timezone with no
@@ -548,6 +550,23 @@ async function setTaskAssignees({ taskId, emails }) {
   return mapProjectActivity(rec);
 }
 
+/**
+ * Links an already-existing task (Project Activity) to a project, adding
+ * to whatever projects it's already linked to rather than replacing them
+ * — a task can belong to more than one project.
+ */
+async function linkTaskToProject({ taskId, projectId }) {
+  if (!taskId) throw new Error('taskId is required.');
+  if (!projectId) throw new Error('projectId is required.');
+  const task = await getProjectActivity(taskId);
+  const projectIds = Array.from(new Set([...(task.projectIds || []), projectId]));
+  const fields = {
+    [T.projectActivities.fields.project]: projectIds
+  };
+  const rec = await client.updateRecord(T.projectActivities.id, taskId, fields);
+  return mapProjectActivity(rec);
+}
+
 async function listProjectActivities() {
   const recs = await client.listAllRecords(T.projectActivities.id);
   return recs.map(mapProjectActivity);
@@ -589,7 +608,7 @@ async function listTaskComments(taskId) {
     .sort((a, b) => new Date(a.postedAt || 0) - new Date(b.postedAt || 0));
 }
 
-async function addTaskComment({ taskId, author, comment, link }) {
+async function addTaskComment({ taskId, author, comment, link, files }) {
   if (!taskId) throw new Error('taskId is required.');
   if (!comment || !comment.trim()) throw new Error('Comment text is required.');
   const fields = {
@@ -599,7 +618,19 @@ async function addTaskComment({ taskId, author, comment, link }) {
   if (author) fields[T.taskComments.fields.author] = author;
   if (link) fields[T.taskComments.fields.link] = link;
 
-  const rec = await client.createRecord(T.taskComments.id, fields);
+  let rec = await client.createRecord(T.taskComments.id, fields);
+
+  if (files && files.length) {
+    for (const file of files) {
+      await client.uploadAttachment(rec.id, T.taskComments.fields.attachment, {
+        filename: file.originalname,
+        contentType: file.mimetype,
+        base64: file.buffer.toString('base64')
+      });
+    }
+    rec = await client.getRecord(T.taskComments.id, rec.id);
+  }
+
   return mapTaskComment(rec);
 }
 
@@ -639,6 +670,28 @@ async function addDealComment({ dealId, author, comment, link }) {
   const fields = {
     [T.taskComments.fields.comment]: comment.trim(),
     [T.taskComments.fields.deal]: [dealId]
+  };
+  if (author) fields[T.taskComments.fields.author] = author;
+  if (link) fields[T.taskComments.fields.link] = link;
+
+  const rec = await client.createRecord(T.taskComments.id, fields);
+  return mapTaskComment(rec);
+}
+
+async function listProjectComments(projectId) {
+  const recs = await client.listAllRecords(T.taskComments.id);
+  return recs
+    .map(mapTaskComment)
+    .filter((c) => c.projectIds.includes(projectId))
+    .sort((a, b) => new Date(a.postedAt || 0) - new Date(b.postedAt || 0));
+}
+
+async function addProjectComment({ projectId, author, comment, link }) {
+  if (!projectId) throw new Error('projectId is required.');
+  if (!comment || !comment.trim()) throw new Error('Comment text is required.');
+  const fields = {
+    [T.taskComments.fields.comment]: comment.trim(),
+    [T.taskComments.fields.project]: [projectId]
   };
   if (author) fields[T.taskComments.fields.author] = author;
   if (link) fields[T.taskComments.fields.link] = link;
@@ -918,12 +971,13 @@ async function listProjectsWithSubtasks() {
  * related products, and subtasks (Project Activities), sorted by date.
  */
 async function getProjectDetail(id) {
-  const [rec, companies, products, projectActivities, deals] = await Promise.all([
+  const [rec, companies, products, projectActivities, deals, comments] = await Promise.all([
     client.getRecord(T.projects.id, id),
     listCompanies(),
     listProducts(),
     listProjectActivities(),
-    listDeals()
+    listDeals(),
+    listProjectComments(id)
   ]);
   const project = mapProject(rec);
   const companyById = new Map(companies.map((c) => [c.id, c]));
@@ -939,7 +993,8 @@ async function getProjectDetail(id) {
     deals: deals.filter((d) => (d.projectIds || []).includes(project.id)),
     subtasks: projectActivities
       .filter((pa) => pa.projectIds.includes(project.id))
-      .sort((a, b) => new Date(a.deadline || a.date || 0) - new Date(b.deadline || b.date || 0))
+      .sort((a, b) => new Date(a.deadline || a.date || 0) - new Date(b.deadline || b.date || 0)),
+    comments
   };
 }
 
@@ -1139,10 +1194,13 @@ module.exports = {
   addProjectAttachments,
   listProjectsWithSubtasks,
   getProjectDetail,
+  listProjectComments,
+  addProjectComment,
   getDealDetail,
   listProjectActivities,
   getProjectActivity,
   createProjectActivity,
+  linkTaskToProject,
   listTaskComments,
   addTaskComment,
   assignTask,

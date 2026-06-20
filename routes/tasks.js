@@ -24,11 +24,11 @@ router.get('/tasks/:id', async (req, res, next) => {
   }
 });
 
-router.post('/tasks/:id/comments', async (req, res, next) => {
+router.post('/tasks/:id/comments', upload.array('attachment', 5), async (req, res, next) => {
   try {
     const { comment, link } = req.body;
     const author = (req.session.user && req.session.user.name) || 'Someone';
-    await crm.addTaskComment({ taskId: req.params.id, author, comment, link });
+    await crm.addTaskComment({ taskId: req.params.id, author, comment, link, files: req.files });
     res.redirect(`/tasks/${req.params.id}`);
   } catch (err) {
     try {

@@ -44,15 +44,35 @@ function clientSecret() {
   return secret;
 }
 
-function redirectUri() {
-  const base = process.env.APP_BASE_URL || 'http://localhost:3000';
-  return `${base.replace(/\/+$/, '')}/auth/airtable/callback`;
+// Multiple domains can serve this app (e.g. an old domain plus a new
+// Hostinger domain). Each one must ALSO be added as a Redirect URI on the
+// OAuth integration in Airtable's Developer Hub, or Airtable will reject
+// the request with "redirect_uri did not match". We pick the matching
+// allowed origin from the incoming request so each domain authenticates
+// against its own callback URL instead of a single hardcoded one.
+function allowedOrigins() {
+  const list = [process.env.APP_BASE_URL, ...(process.env.ALLOWED_APP_DOMAINS || '').split(',')]
+    .map((s) => (s || '').trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+  return list.length ? list : ['http://localhost:3000'];
 }
 
-function buildAuthorizeUrl({ state, codeChallenge }) {
+function redirectUri(req) {
+  const origins = allowedOrigins();
+  if (req) {
+    const host = req.get('host');
+    const proto = req.protocol;
+    const candidate = `${proto}://${host}`;
+    const match = origins.find((o) => o.replace(/^https?:\/\//, '') === candidate.replace(/^https?:\/\//, ''));
+    if (match) return `${match}/auth/airtable/callback`;
+  }
+  return `${origins[0]}/auth/airtable/callback`;
+}
+
+function buildAuthorizeUrl({ state, codeChallenge, req }) {
   const params = new URLSearchParams({
     client_id: clientId(),
-    redirect_uri: redirectUri(),
+    redirect_uri: redirectUri(req),
     response_type: 'code',
     scope: SCOPES,
     state,
@@ -62,12 +82,12 @@ function buildAuthorizeUrl({ state, codeChallenge }) {
   return `${AUTHORIZE_URL}?${params.toString()}`;
 }
 
-async function exchangeCodeForToken({ code, codeVerifier }) {
+async function exchangeCodeForToken({ code, codeVerifier, req }) {
   const basicAuth = Buffer.from(`${clientId()}:${clientSecret()}`).toString('base64');
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
-    redirect_uri: redirectUri(),
+    redirect_uri: redirectUri(req),
     client_id: clientId(),
     code_verifier: codeVerifier
   });
