@@ -285,6 +285,13 @@ async function getActivity(id) {
   } else {
     activity.projectNames = [];
   }
+  if (activity.companyIds.length) {
+    const companies = await listCompanies();
+    const companyById = new Map(companies.map((c) => [c.id, c]));
+    activity.companyNames = activity.companyIds.map((cid) => companyById.get(cid)?.name).filter(Boolean);
+  } else {
+    activity.companyNames = [];
+  }
   return activity;
 }
 
@@ -642,7 +649,7 @@ async function listActivityComments(activityId) {
     .sort((a, b) => new Date(a.postedAt || 0) - new Date(b.postedAt || 0));
 }
 
-async function addActivityComment({ activityId, author, comment, link }) {
+async function addActivityComment({ activityId, author, comment, link, files }) {
   if (!activityId) throw new Error('activityId is required.');
   if (!comment || !comment.trim()) throw new Error('Comment text is required.');
   const fields = {
@@ -652,7 +659,19 @@ async function addActivityComment({ activityId, author, comment, link }) {
   if (author) fields[T.taskComments.fields.author] = author;
   if (link) fields[T.taskComments.fields.link] = link;
 
-  const rec = await client.createRecord(T.taskComments.id, fields);
+  let rec = await client.createRecord(T.taskComments.id, fields);
+
+  if (files && files.length) {
+    for (const file of files) {
+      await client.uploadAttachment(rec.id, T.taskComments.fields.attachment, {
+        filename: file.originalname,
+        contentType: file.mimetype,
+        base64: file.buffer.toString('base64')
+      });
+    }
+    rec = await client.getRecord(T.taskComments.id, rec.id);
+  }
+
   return mapTaskComment(rec);
 }
 
@@ -686,7 +705,7 @@ async function listProjectComments(projectId) {
     .sort((a, b) => new Date(a.postedAt || 0) - new Date(b.postedAt || 0));
 }
 
-async function addProjectComment({ projectId, author, comment, link }) {
+async function addProjectComment({ projectId, author, comment, link, files }) {
   if (!projectId) throw new Error('projectId is required.');
   if (!comment || !comment.trim()) throw new Error('Comment text is required.');
   const fields = {
@@ -696,7 +715,19 @@ async function addProjectComment({ projectId, author, comment, link }) {
   if (author) fields[T.taskComments.fields.author] = author;
   if (link) fields[T.taskComments.fields.link] = link;
 
-  const rec = await client.createRecord(T.taskComments.id, fields);
+  let rec = await client.createRecord(T.taskComments.id, fields);
+
+  if (files && files.length) {
+    for (const file of files) {
+      await client.uploadAttachment(rec.id, T.taskComments.fields.attachment, {
+        filename: file.originalname,
+        contentType: file.mimetype,
+        base64: file.buffer.toString('base64')
+      });
+    }
+    rec = await client.getRecord(T.taskComments.id, rec.id);
+  }
+
   return mapTaskComment(rec);
 }
 

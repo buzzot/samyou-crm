@@ -1,6 +1,12 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 const crm = require('../services/crm');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 }
+});
 
 async function loadFormData(activity) {
   const companyId = (activity.companyIds || [])[0];
@@ -9,6 +15,33 @@ async function loadFormData(activity) {
   const companyProjects = companyId ? projects.filter((p) => p.companyIds.includes(companyId)) : projects;
   return { persons, projects: companyProjects };
 }
+
+router.get('/activities', async (req, res, next) => {
+  try {
+    const { role, email } = req.session.user;
+    const [allActivities, allCompanies, projects] = await Promise.all([
+      crm.listActivities(),
+      crm.listCompanies(),
+      crm.listProjects()
+    ]);
+    const activities = role === 'Sales' ? crm.scopeToOwner(allActivities, email) : allActivities;
+    const companyById = new Map(allCompanies.map((c) => [c.id, c]));
+    const projectById = new Map(projects.map((p) => [p.id, p]));
+
+    const sorted = activities
+      .slice()
+      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+      .map((a) => ({
+        ...a,
+        companyNames: a.companyIds.map((id) => companyById.get(id)?.name).filter(Boolean),
+        projectNames: a.projectIds.map((id) => projectById.get(id)?.name).filter(Boolean)
+      }));
+
+    res.render('activities', { title: 'Activity', activities: sorted });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.get('/activities/:id', async (req, res, next) => {
   try {
@@ -63,11 +96,11 @@ router.post('/activities/:id', async (req, res, next) => {
   }
 });
 
-router.post('/activities/:id/comments', async (req, res, next) => {
+router.post('/activities/:id/comments', upload.array('attachment', 5), async (req, res, next) => {
   try {
     const { comment, link } = req.body;
     const author = (req.session.user && req.session.user.name) || 'Someone';
-    await crm.addActivityComment({ activityId: req.params.id, author, comment, link });
+    await crm.addActivityComment({ activityId: req.params.id, author, comment, link, files: req.files });
     res.redirect(`/activities/${req.params.id}`);
   } catch (err) {
     try {

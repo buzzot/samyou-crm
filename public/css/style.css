@@ -1737,6 +1737,34 @@ textarea.soft-input {
   resize: vertical;
 }
 
+/* Native <select> elements render with each browser's own chrome (rounded
+   grey pill + system arrow glyph on Safari/macOS, a different flat caret on
+   Chrome/Windows, etc.). Resetting appearance and drawing our own chevron
+   keeps the *closed* control consistent everywhere. The open dropdown list
+   itself is OS/browser-native and can't be restyled with CSS in any
+   browser — only the box you see before clicking is ours to control. */
+select.soft-input,
+select.pnew-select,
+.chip-add-select,
+select.result-select-inline {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%235b6172' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.65rem 0.45rem;
+  padding-right: 2.1rem;
+}
+
+/* Tone the native date-picker glyph down to match the muted icon color used
+   elsewhere — this works in both Chrome and Safari (both WebKit-derived),
+   though the calendar popup itself remains native to each browser. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: opacity(0.55);
+  cursor: pointer;
+}
+
 .chip-field {
   display: flex;
   flex-wrap: wrap;

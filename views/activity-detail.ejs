@@ -19,6 +19,12 @@
     <% } %>
   </div>
   <h1 class="activity-title mb-1"><%= activity.name || '(untitled)' %></h1>
+  <% if (activity.companyIds && activity.companyIds.length) { %>
+    <p class="mb-1" style="font-size: 1.15rem;">
+      <i class="bi bi-building"></i>
+      <a href="/companies/<%= activity.companyIds[0] %>" class="table-link fw-semibold"><%= (activity.companyNames && activity.companyNames.join(', ')) || 'Unknown company' %></a>
+    </p>
+  <% } %>
   <p class="text-muted small mb-0">Edit details below — changes are saved to this activity.</p>
 </div>
 
@@ -207,17 +213,18 @@
       <div class="card-header fw-semibold"><i class="bi bi-chat-left-text me-1"></i>Comments (<%= activity.comments.length %>)</div>
 
       <div class="card-body note-composer">
-        <form action="/activities/<%= activity.id %>/comments" method="POST">
+        <form action="/activities/<%= activity.id %>/comments" method="POST" enctype="multipart/form-data">
           <div class="note-compose-box">
             <div class="d-flex gap-2">
               <span class="note-avatar note-avatar-you"><%= youInitial %></span>
               <textarea name="comment" class="note-textarea" rows="2" placeholder="Add a comment..." required></textarea>
             </div>
             <div class="note-compose-footer">
-              <div class="note-link-field">
-                <i class="bi bi-link-45deg"></i>
-                <input type="url" name="link" class="note-link-input-inline" placeholder="Optional link (e.g. to a file)">
-              </div>
+              <label class="note-link-field" style="cursor: pointer;">
+                <i class="bi bi-paperclip"></i>
+                <span id="activityCommentFileLabel">Attach</span>
+                <input type="file" name="attachment" multiple style="display: none;" id="activityCommentFileInput">
+              </label>
               <button type="submit" class="note-post-btn"><i class="bi bi-send-fill me-1"></i>Post comment</button>
             </div>
           </div>
@@ -241,6 +248,13 @@
               <% if (c.link) { %>
                 <a href="<%= c.link %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-link-45deg"></i><%= c.link %></a>
               <% } %>
+              <% if (c.attachments && c.attachments.length) { %>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                  <% c.attachments.forEach(file => { %>
+                    <a href="<%= file.url %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-paperclip"></i><%= file.filename %></a>
+                  <% }) %>
+                </div>
+              <% } %>
             </div>
           </div>
         <% }) %>
@@ -248,3 +262,16 @@
     </div>
   </div>
 </div>
+
+<script>
+  (function () {
+    const input = document.getElementById('activityCommentFileInput');
+    const label = document.getElementById('activityCommentFileLabel');
+    if (input && label) {
+      input.addEventListener('change', function () {
+        const n = input.files ? input.files.length : 0;
+        label.textContent = n ? (n + ' file' + (n === 1 ? '' : 's')) : 'Attach';
+      });
+    }
+  })();
+</script>

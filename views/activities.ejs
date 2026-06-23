@@ -1,0 +1,60 @@
+<div class="projects-page-header">
+  <div>
+    <h1 class="projects-page-title">Activity</h1>
+    <div class="projects-page-subtitle">
+      <%= activities.length %> activit<%= activities.length === 1 ? 'y' : 'ies' %> logged
+    </div>
+  </div>
+  <div class="projects-page-actions">
+    <div class="projects-search-wrap">
+      <i class="bi bi-search"></i>
+      <input type="text" id="activitySearch" placeholder="Search activity...">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body activity-timeline" id="activityList">
+    <% if (activities.length === 0) { %>
+      <div class="text-muted small">No activity logged yet.</div>
+    <% } %>
+    <% activities.forEach(a => { %>
+      <% const t = (a.type || '').toLowerCase(); %>
+      <% const icon = t.includes('call') ? 'bi-telephone' : t.includes('email') ? 'bi-envelope' : t.includes('linkedin') ? 'bi-linkedin' : t.includes('meet') ? 'bi-people' : 'bi-clock-history'; %>
+      <% const iconColor = t.includes('call') ? 'tl-blue' : t.includes('email') ? 'tl-purple' : t.includes('linkedin') ? 'tl-blue' : 'tl-gray'; %>
+      <div class="timeline-item" data-search="<%= [a.name, a.type, a.result, (a.companyNames||[]).join(' '), (a.projectNames||[]).join(' ')].join(' ').toLowerCase() %>">
+        <div class="timeline-icon <%= iconColor %>"><i class="bi <%= icon %>"></i></div>
+        <div class="timeline-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <a href="/activities/<%= a.id %>" class="timeline-name table-link"><%= a.name || '(untitled)' %></a>
+            <span class="timeline-date text-nowrap ms-2"><%= a.date || '—' %></span>
+          </div>
+          <div class="timeline-meta">
+            <% if (a.companyIds[0]) { %>
+              <a href="/companies/<%= a.companyIds[0] %>" class="table-link"><%= a.companyNames.join(', ') || 'Unknown company' %></a>
+            <% } %>
+            <% if (a.type) { %><span class="ms-1"><%= a.companyIds[0] ? '·' : '' %> <%= a.type %></span><% } %>
+            <% if (a.projectNames && a.projectNames.length) { %>
+              <span class="ms-1"><%= (a.companyIds[0] || a.type) ? '·' : '' %> <i class="bi bi-diagram-3"></i> <%= a.projectNames.join(', ') %></span>
+            <% } %>
+            <% if (a.result) { %><span class="ms-1">&middot; <%= a.result %></span><% } %>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const list = document.getElementById('activityList');
+    const searchInput = document.getElementById('activitySearch');
+    if (!list || !searchInput) return;
+    searchInput.addEventListener('input', () => {
+      const q = (searchInput.value || '').toLowerCase();
+      list.querySelectorAll('.timeline-item').forEach((item) => {
+        item.style.display = (item.dataset.search || '').includes(q) ? '' : 'none';
+      });
+    });
+  })();
+</script>

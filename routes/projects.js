@@ -169,11 +169,11 @@ router.post('/projects/:id/attachments', upload.array('attachments', 10), async 
 });
 
 // Post a note/comment on this project, attributed to the logged-in user.
-router.post('/projects/:id/comments', async (req, res, next) => {
+router.post('/projects/:id/comments', upload.array('attachment', 5), async (req, res, next) => {
   try {
     const { comment, link } = req.body;
     const author = (req.session.user && req.session.user.name) || 'Someone';
-    await crm.addProjectComment({ projectId: req.params.id, author, comment, link });
+    await crm.addProjectComment({ projectId: req.params.id, author, comment, link, files: req.files });
     res.redirect(`/projects/${req.params.id}`);
   } catch (err) {
     try {

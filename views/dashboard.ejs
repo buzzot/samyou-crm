@@ -46,6 +46,46 @@
   <div class="col-lg-8">
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="dashboard-card-title">Recent activity</span>
+        <span class="live-dot"><span class="dot"></span>Live</span>
+      </div>
+      <div class="card-body activity-timeline">
+        <% if (recentActivities.length === 0) { %>
+          <div class="text-muted small">No activity logged yet.</div>
+        <% } %>
+        <% recentActivities.forEach(a => { %>
+          <% const t = (a.type || '').toLowerCase(); %>
+          <% const icon = t.includes('call') ? 'bi-telephone' : t.includes('email') ? 'bi-envelope' : t.includes('linkedin') ? 'bi-linkedin' : t.includes('meet') ? 'bi-people' : 'bi-clock-history'; %>
+          <% const iconColor = t.includes('call') ? 'tl-blue' : t.includes('email') ? 'tl-purple' : t.includes('linkedin') ? 'tl-blue' : 'tl-gray'; %>
+          <div class="timeline-item">
+            <div class="timeline-icon <%= iconColor %>"><i class="bi <%= icon %>"></i></div>
+            <div class="timeline-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <a href="/activities/<%= a.id %>" class="timeline-name table-link"><%= a.name || '(untitled)' %></a>
+                <span class="timeline-date text-nowrap ms-2"><%= a.date %></span>
+              </div>
+              <div class="timeline-meta">
+                <% if (a.companyIds[0]) { %>
+                  <span><%= a.companyNames.join(', ') || 'Unknown company' %></span>
+                <% } %>
+                <% if (a.type) { %><span class="ms-1"><%= a.companyIds[0] ? '·' : '' %> <%= a.type %></span><% } %>
+                <% if (a.projectNames && a.projectNames.length) { %>
+                  <span class="ms-1"><%= (a.companyIds[0] || a.type) ? '·' : '' %> <i class="bi bi-diagram-3"></i> <%= a.projectNames.join(', ') %></span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+      <div class="card-body pt-0">
+        <a href="/activities" class="btn-view-all">View all activity <i class="bi bi-arrow-up-right"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
         <div>
           <span class="dashboard-card-title">Pipeline by stage</span>
           <div class="dashboard-card-subtitle">
@@ -71,46 +111,6 @@
             </div>
           </div>
         <% }) %>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-4">
-    <div class="card h-100">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span class="dashboard-card-title">Recent activity</span>
-        <span class="live-dot"><span class="dot"></span>Live</span>
-      </div>
-      <div class="card-body activity-timeline">
-        <% if (recentActivities.length === 0) { %>
-          <div class="text-muted small">No activity logged yet.</div>
-        <% } %>
-        <% recentActivities.forEach(a => { %>
-          <% const t = (a.type || '').toLowerCase(); %>
-          <% const icon = t.includes('call') ? 'bi-telephone' : t.includes('email') ? 'bi-envelope' : t.includes('linkedin') ? 'bi-linkedin' : t.includes('meet') ? 'bi-people' : 'bi-clock-history'; %>
-          <% const iconColor = t.includes('call') ? 'tl-blue' : t.includes('email') ? 'tl-purple' : t.includes('linkedin') ? 'tl-blue' : 'tl-gray'; %>
-          <div class="timeline-item">
-            <div class="timeline-icon <%= iconColor %>"><i class="bi <%= icon %>"></i></div>
-            <div class="timeline-body">
-              <div class="d-flex justify-content-between align-items-start">
-                <span class="timeline-name"><%= a.name || '(untitled)' %></span>
-                <span class="timeline-date text-nowrap ms-2"><%= a.date %></span>
-              </div>
-              <div class="timeline-meta">
-                <% if (a.companyIds[0]) { %>
-                  <a href="/companies/<%= a.companyIds[0] %>" class="table-link"><%= a.companyNames.join(', ') || 'Unknown company' %></a>
-                <% } %>
-                <% if (a.type) { %><span class="ms-1"><%= a.companyIds[0] ? '·' : '' %> <%= a.type %></span><% } %>
-                <% if (a.projectNames && a.projectNames.length) { %>
-                  <span class="ms-1"><%= (a.companyIds[0] || a.type) ? '·' : '' %> <i class="bi bi-diagram-3"></i> <%= a.projectNames.join(', ') %></span>
-                <% } %>
-              </div>
-            </div>
-          </div>
-        <% }) %>
-      </div>
-      <div class="card-body pt-0">
-        <a href="/pipeline" class="btn-view-all">View all activity <i class="bi bi-arrow-up-right"></i></a>
       </div>
     </div>
   </div>
