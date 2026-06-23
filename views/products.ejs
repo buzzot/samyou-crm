@@ -61,7 +61,7 @@
         <tr class="product-row"
           data-category="<%= normalizeCategory(p.category) || 'Uncategorized' %>"
           data-search="<%= [p.name, normalizeCategory(p.category), p.notes, (p.projects||[]).map(proj=>proj.name).join(' ')].filter(Boolean).join(' ').toLowerCase() %>">
-          <td>
+          <td data-label="Product">
             <div class="product-name-cell">
               <span class="product-icon <%= categoryColor(p.category) %>"><i class="bi bi-box-seam"></i></span>
               <div class="product-name-block">
@@ -72,20 +72,20 @@
               </div>
             </div>
           </td>
-          <td>
+          <td data-label="Category">
             <% if (normalizeCategory(p.category)) { %><span class="industry-tag <%= categoryColor(p.category) %>"><%= normalizeCategory(p.category) %></span><% } else { %><span class="muted-cell">—</span><% } %>
           </td>
-          <td class="text-truncate" style="max-width: 320px;">
+          <td class="text-truncate" style="max-width: 320px;" data-label="Notes">
             <% if (p.notes) { %><%= p.notes %><% } else { %><span class="muted-cell">—</span><% } %>
           </td>
-          <td>
+          <td data-label="Datasheet">
             <% if (p.datasheet && p.datasheet.length) { %>
               <% p.datasheet.forEach(file => { %>
                 <a href="<%= file.url %>" target="_blank" rel="noopener" class="specs-link"><i class="bi bi-file-earmark-text"></i> Specs</a>
               <% }) %>
             <% } else { %><span class="muted-cell">—</span><% } %>
           </td>
-          <td>
+          <td data-label="Related Project">
             <% if (p.projects && p.projects.length) { %>
               <div class="related-project-stack">
                 <% p.projects.forEach(proj => { %>

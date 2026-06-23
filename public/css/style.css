@@ -2594,3 +2594,256 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
   color: #5b6172;
 }
+
+/* =====================================================================
+   MOBILE OPTIMIZATION
+   A single consolidated block (rather than scattering breakpoints next
+   to every component above) so the whole mobile experience can be
+   reviewed/tuned in one place. Targets phones and small tablets.
+   ===================================================================== */
+
+@media (max-width: 991.98px) {
+  .pnew-aside {
+    position: static;
+  }
+}
+
+@media (max-width: 767.98px) {
+  /* ---- Navbar ---- */
+  .app-navbar .navbar-brand {
+    font-size: 0.95rem;
+  }
+
+  .app-nav-pills .nav-link {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .user-chip {
+    font-size: 0.78rem;
+  }
+
+  main.container-fluid {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+    padding-top: 1rem;
+  }
+
+  .display-headline {
+    font-size: 1.85rem;
+  }
+
+  /* ---- Generic page headers: stack title/actions, full-width controls ---- */
+  .companies-page-header,
+  .products-page-header,
+  .projects-page-header,
+  .companies-toolbar,
+  .products-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .projects-page-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .projects-page-actions > * {
+    width: 100%;
+  }
+
+  .companies-search-wrap,
+  .projects-search-wrap {
+    width: 100%;
+  }
+
+  .companies-search-wrap input,
+  .projects-search-wrap input {
+    width: 100%;
+  }
+
+  .status-filter-tabs,
+  .group-toggle {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  /* ---- Stat cards: tighten on phones ---- */
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-card .card-body {
+    padding: 0.9rem 1rem;
+  }
+
+  /* ---- Pipeline board: narrower columns so 1.x cards fit per screen ---- */
+  .pipeline-col {
+    flex: 0 0 240px;
+    max-height: none;
+  }
+
+  /* ---- Modals: use nearly the full viewport width ---- */
+  .modal-dialog {
+    margin: 0.75rem;
+  }
+
+  /* ---- Card-based list/table collapse: companies + products tables ---- */
+  .companies-table thead {
+    display: none;
+  }
+
+  .companies-table,
+  .companies-table tbody,
+  .companies-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .companies-table tr {
+    border-bottom: 1px solid #eef0f3;
+    padding: 0.85rem 1.1rem;
+  }
+
+  .companies-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .companies-table td {
+    display: block;
+    padding: 0.4rem 0;
+    border-bottom: none;
+    white-space: normal;
+  }
+
+  .companies-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9aa0ab;
+    margin-bottom: 0.2rem;
+  }
+
+  .companies-table td.text-truncate {
+    max-width: none !important;
+    white-space: normal;
+  }
+
+  /* ---- Plain bootstrap tables wrapped in .table-responsive already
+     scroll horizontally; just trim cell padding so more fits on screen ---- */
+  .table-responsive .table td,
+  .table-responsive .table th {
+    padding: 0.6rem 0.7rem;
+  }
+
+  /* ---- Row-grid (Projects page + subtasks): stack into label/value rows ---- */
+  .projects-col-header.row-grid {
+    display: none;
+  }
+
+  .row-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: stretch;
+  }
+
+  .row-grid > div {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+  }
+
+  .row-grid .cell-type,
+  .row-grid .cell-status,
+  .row-grid .cell-date,
+  .row-grid .cell-owner {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .row-grid .cell-type::before,
+  .row-grid .cell-status::before,
+  .row-grid .cell-date::before,
+  .row-grid .cell-owner::before {
+    content: 'Type';
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9aa0ab;
+    flex: 0 0 auto;
+    width: 4.2rem;
+  }
+
+  .row-grid .cell-status::before { content: 'Status'; }
+  .row-grid .cell-date::before { content: 'Date'; }
+  .row-grid .cell-owner::before { content: 'Owner'; }
+
+  .row-grid .cell-type:has(.muted-cell:only-child),
+  .row-grid .cell-owner:has(.muted-cell:only-child) {
+    display: none;
+  }
+
+  .row-grid .cell-actions {
+    justify-content: flex-start;
+    margin-top: 0.3rem;
+  }
+
+  .project-card .project-row {
+    padding: 0.9rem 1rem;
+  }
+
+  .subtask-row.row-grid,
+  .project-card .subtask-row {
+    padding: 0.7rem 1rem;
+  }
+
+  /* ---- Project-new / detail two-column forms already break at 900px;
+     tighten card padding further on phones ---- */
+  .pnew-card,
+  .pnew-summary-card,
+  .pnew-tip-card {
+    padding: 1rem 1.1rem;
+  }
+
+  .pnew-hero {
+    font-size: 1.7rem;
+  }
+
+  .pnew-footer-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pnew-footer-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* ---- Activity detail title ---- */
+  .activity-title {
+    font-size: 1.45rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .stat-value {
+    font-size: 1.3rem;
+  }
+
+  .pipeline-col {
+    flex: 0 0 82vw;
+  }
+
+  .company-avatar,
+  .product-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
