@@ -126,13 +126,13 @@
           <% task.records.forEach((r, i) => { %>
             <% const rInitial = (r.recordedByName || '?').trim().charAt(0).toUpperCase(); %>
             <div class="note-item">
-              <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= rInitial %></span>
+              <div class="note-item-head">
+                <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= rInitial %></span>
+                <span class="fw-semibold note-author"><%= r.recordedByName || 'Someone' %></span>
+                <span class="text-muted small note-item-time"><%= r.dateRecorded || '' %></span>
+              </div>
               <div class="note-bubble">
-                <div class="d-flex justify-content-between align-items-baseline gap-2">
-                  <span class="fw-semibold note-author"><%= r.recordedByName || 'Someone' %></span>
-                  <span class="text-muted small flex-shrink-0"><%= r.dateRecorded || '' %></span>
-                </div>
-                <% if (r.category) { %><span class="pnew-badge" style="margin: 0.35rem 0 0;"><%= r.category %></span><% } %>
+                <% if (r.category) { %><span class="pnew-badge" style="margin: 0 0 0.35rem;"><%= r.category %></span><% } %>
                 <% if (r.details) { %><div class="note-text"><%= r.details %></div><% } %>
                 <% if (r.attachments && r.attachments.length) { %>
                   <div class="d-flex flex-wrap gap-2 mt-2">
@@ -203,7 +203,7 @@
                 <span id="taskCommentFileLabel">Attach</span>
                 <input type="file" name="attachment" multiple style="display: none;" id="taskCommentFileInput">
               </label>
-              <button type="submit" class="note-post-btn"><i class="bi bi-send-fill me-1"></i>Post comment</button>
+              <button type="submit" class="note-post-btn"><i class="bi bi-send-fill me-1"></i>Send</button>
             </div>
           </div>
         </form>
@@ -215,12 +215,12 @@
           <% (task.comments ? task.comments.slice().reverse() : []).forEach((c, i) => { %>
             <% const cInitial = (c.author || '?').trim().charAt(0).toUpperCase(); %>
             <div class="note-item">
-              <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= cInitial %></span>
+              <div class="note-item-head">
+                <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= cInitial %></span>
+                <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
+                <span class="text-muted small note-item-time"><%= noteTimeAgo(c.postedAt) %></span>
+              </div>
               <div class="note-bubble">
-                <div class="d-flex justify-content-between align-items-baseline gap-2">
-                  <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
-                  <span class="text-muted small flex-shrink-0"><%= noteTimeAgo(c.postedAt) %></span>
-                </div>
                 <div class="note-text"><%= c.comment %></div>
                 <% if (c.attachments && c.attachments.length) { %>
                   <div class="d-flex flex-wrap gap-2 mt-2">

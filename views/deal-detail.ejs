@@ -264,7 +264,7 @@
                 <i class="bi bi-link-45deg"></i>
                 <input type="url" name="link" class="note-link-input-inline" placeholder="Optional link (e.g. to a file)">
               </div>
-              <button type="submit" class="note-post-btn"><i class="bi bi-send-fill me-1"></i>Post note</button>
+              <button type="submit" class="note-post-btn"><i class="bi bi-send-fill me-1"></i>Send</button>
             </div>
           </div>
         </form>
@@ -277,12 +277,12 @@
         <% orderedComments.forEach((c, i) => { %>
           <% const initial = (c.author || '?').trim().charAt(0).toUpperCase(); %>
           <div class="note-item">
-            <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= initial %></span>
+            <div class="note-item-head">
+              <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= initial %></span>
+              <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
+              <span class="text-muted small note-item-time"><%= noteTimeAgo(c.postedAt) %></span>
+            </div>
             <div class="note-bubble">
-              <div class="d-flex justify-content-between align-items-baseline gap-2">
-                <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
-                <span class="text-muted small flex-shrink-0"><%= noteTimeAgo(c.postedAt) %></span>
-              </div>
               <div class="note-text"><%= c.comment %></div>
               <% if (c.link) { %>
                 <a href="<%= c.link %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-link-45deg"></i><%= c.link %></a>

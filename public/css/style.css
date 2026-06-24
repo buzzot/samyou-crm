@@ -1595,7 +1595,8 @@ main h1 {
 
 .note-item {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.4rem;
   position: relative;
   padding-top: 1rem;
 }
@@ -1610,8 +1611,21 @@ main h1 {
   background: #eef0f5;
 }
 
+/* Header row: avatar + author + timestamp, sitting above (outside) the
+   message bubble rather than inside it. */
+.note-item-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.note-item-time {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .note-bubble {
-  flex: 1;
+  margin-left: calc(34px + 0.6rem);
   min-width: 0;
   border: 1px solid #eef0f5;
   border-radius: 0.7rem;
@@ -2605,6 +2619,30 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 @media (max-width: 991.98px) {
   .pnew-aside {
     position: static;
+  }
+}
+
+/* Projects page only: on mobile, show the Overview summary card first,
+   ahead of Description/Products/Attachments/Comments, even though in the
+   markup it's nested inside .pnew-aside (which otherwise renders after
+   .pnew-main once the grid collapses to one column). display:contents
+   un-boxes .pnew-aside so its children become direct grid items that can
+   be reordered independently of each other. */
+@media (max-width: 900px) {
+  .project-detail-page .pnew-aside {
+    display: contents;
+  }
+  .project-detail-page .pnew-main {
+    order: 2;
+  }
+  .project-detail-page .pnew-aside > .pnew-summary-card {
+    order: 1;
+  }
+  .project-detail-page .pnew-aside > .pnew-card {
+    order: 3;
+  }
+  .project-detail-page .pnew-aside > .pnew-tip-card {
+    order: 4;
   }
 }
 
