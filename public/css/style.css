@@ -1574,18 +1574,22 @@ main h1 {
 }
 
 .note-post-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: linear-gradient(135deg, #3b6fe0, #7c5cff);
   color: #fff;
   border: none;
-  border-radius: 0.55rem;
-  padding: 0.4rem 1rem;
-  font-weight: 500;
+  border-radius: 999px;
+  padding: 0.45rem 1.05rem;
+  font-weight: 600;
   font-size: 0.85rem;
   flex: 0 0 auto;
+  box-shadow: 0 2px 8px rgba(59,111,224,0.2);
 }
 
 .note-post-btn:hover {
-  opacity: 0.92;
+  opacity: 0.9;
   color: #fff;
 }
 
@@ -1871,13 +1875,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .btn-save-changes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: #1f2a44;
   color: #fff;
   border: none;
-  border-radius: 0.6rem;
-  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  padding: 0.55rem 1.2rem;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
 }
 
 .btn-save-changes:hover {
@@ -1886,16 +1893,17 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .btn-cancel-link {
-  background: #fff;
-  color: #1f2a44;
-  border: 1px solid #e3e6ef;
-  border-radius: 0.6rem;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  font-size: 0.88rem;
-  text-decoration: none;
   display: inline-flex;
   align-items: center;
+  gap: 0.4rem;
+  background: #fff;
+  color: #5b6172;
+  border: 1px solid #e3e6ef;
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
 }
 
 .btn-cancel-link:hover {
@@ -2402,7 +2410,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .pnew-summary-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 0.75rem;
   padding: 0.45rem 0;
   border-bottom: 1px solid #f4f6fb;
@@ -2423,6 +2431,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
   text-align: right;
   max-width: 60%;
+}
+
+/* Badge inside a summary row — keep its own font-weight, don't inherit the
+   row's bold value style, and ensure it sits on the baseline properly. */
+.pnew-summary-row span:last-child .badge,
+.pnew-summary-row span:last-child [class*="stage-"] {
+  font-weight: 600;
+  font-size: 0.75rem;
+  vertical-align: middle;
 }
 
 .pnew-tip-card {
