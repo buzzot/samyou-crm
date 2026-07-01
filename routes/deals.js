@@ -17,8 +17,10 @@ router.get('/deals/:id', async (req, res, next) => {
     res.render('deal-detail', {
       title: deal.name,
       deal,
+      persons: deal.persons || [],
       allProjects,
       allProducts,
+      stageChoices: crm.schema.tables.deals.stageChoices,
       statusChoices: crm.schema.tables.projects.statusChoices,
       categoryChoices: crm.schema.tables.projects.categoryChoices,
       activityTypeChoices: crm.schema.tables.activities.typeChoices,
@@ -26,6 +28,36 @@ router.get('/deals/:id', async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+});
+
+// Update the deal's core fields (name, stage, amount, probability, close date,
+// primary contact). Posted from the inline edit form in the sidebar.
+router.post('/deals/:id/details', async (req, res, next) => {
+  try {
+    const { name, stage, amount, probability, closeDate, primaryContactId } = req.body;
+    if (!name || !name.trim()) throw new Error('Deal name is required.');
+    await crm.updateDeal(req.params.id, { name, stage, amount, probability, closeDate, primaryContactId });
+    res.redirect(`/deals/${req.params.id}`);
+  } catch (err) {
+    try {
+      const deal = await crm.getDealDetail(req.params.id);
+      const { allProjects, allProducts } = await loadDealPageData(deal);
+      return res.status(400).render('deal-detail', {
+        title: deal.name,
+        deal,
+        persons: deal.persons || [],
+        allProjects,
+        allProducts,
+        stageChoices: crm.schema.tables.deals.stageChoices,
+        statusChoices: crm.schema.tables.projects.statusChoices,
+        categoryChoices: crm.schema.tables.projects.categoryChoices,
+        activityTypeChoices: crm.schema.tables.activities.typeChoices,
+        error: err.message
+      });
+    } catch (err2) {
+      next(err2);
+    }
   }
 });
 
@@ -64,8 +96,10 @@ router.post('/deals/:id/projects', async (req, res, next) => {
       return res.status(400).render('deal-detail', {
         title: deal.name,
         deal,
+        persons: deal.persons || [],
         allProjects,
         allProducts,
+        stageChoices: crm.schema.tables.deals.stageChoices,
         statusChoices: crm.schema.tables.projects.statusChoices,
         categoryChoices: crm.schema.tables.projects.categoryChoices,
         activityTypeChoices: crm.schema.tables.activities.typeChoices,
@@ -94,8 +128,10 @@ router.post('/deals/:id/activities', async (req, res, next) => {
       return res.status(400).render('deal-detail', {
         title: deal.name,
         deal,
+        persons: deal.persons || [],
         allProjects,
         allProducts,
+        stageChoices: crm.schema.tables.deals.stageChoices,
         statusChoices: crm.schema.tables.projects.statusChoices,
         categoryChoices: crm.schema.tables.projects.categoryChoices,
         activityTypeChoices: crm.schema.tables.activities.typeChoices,
@@ -121,8 +157,10 @@ router.post('/deals/:id/comments', async (req, res, next) => {
       return res.status(400).render('deal-detail', {
         title: deal.name,
         deal,
+        persons: deal.persons || [],
         allProjects,
         allProducts,
+        stageChoices: crm.schema.tables.deals.stageChoices,
         statusChoices: crm.schema.tables.projects.statusChoices,
         categoryChoices: crm.schema.tables.projects.categoryChoices,
         activityTypeChoices: crm.schema.tables.activities.typeChoices,

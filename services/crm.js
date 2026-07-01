@@ -392,6 +392,25 @@ async function updateDealLinks(id, { projectIds, productIds } = {}) {
 }
 
 /**
+ * Update a deal's core fields: name, stage, amount, probability, close date,
+ * and primary contact. Only the fields that are explicitly provided are sent
+ * to Airtable — undefined keys are ignored so callers can do partial updates.
+ */
+async function updateDeal(id, { name, stage, amount, probability, closeDate, primaryContactId } = {}) {
+  if (!id) throw new Error('Deal id is required.');
+  const fields = {};
+  if (name !== undefined) fields[T.deals.fields.name] = name.trim();
+  if (stage !== undefined) fields[T.deals.fields.stage] = stage || null;
+  if (amount !== undefined) fields[T.deals.fields.amount] = amount !== '' ? Number(amount) : null;
+  if (probability !== undefined) fields[T.deals.fields.probability] = probability !== '' ? Number(probability) / 100 : null;
+  if (closeDate !== undefined) fields[T.deals.fields.closeDate] = closeDate || null;
+  if (primaryContactId !== undefined) fields[T.deals.fields.primaryContact] = primaryContactId ? [primaryContactId] : [];
+  if (!Object.keys(fields).length) return getDeal(id);
+  const updated = await client.updateRecord(T.deals.id, id, fields);
+  return mapDeal(updated);
+}
+
+/**
  * Creates a brand-new Project from a Deal: the project inherits the deal's
  * company (Projects already link to a company) and is immediately linked
  * back onto the deal's Projects field.
@@ -1050,10 +1069,17 @@ async function getDealDetail(id) {
   const projectById = new Map(projects.map((p) => [p.id, p]));
   const productById = new Map(products.map((p) => [p.id, p]));
 
+  const company = companyById.get(deal.companyIds[0]) || null;
+  // Contacts scoped to the deal's company (for the edit-form dropdown).
+  const persons = company
+    ? contacts.filter((c) => c.companyIds.includes(company.id))
+    : contacts;
+
   return {
     ...deal,
-    company: companyById.get(deal.companyIds[0]) || null,
+    company,
     primaryContact: contactById.get(deal.primaryContactIds[0]) || null,
+    persons,
     projects: (deal.projectIds || []).map((pid) => projectById.get(pid)).filter(Boolean),
     products: (deal.productIds || []).map((pid) => productById.get(pid)).filter(Boolean),
     activities: activities
@@ -1214,6 +1240,7 @@ module.exports = {
   listDeals,
   getDeal,
   createDeal,
+  updateDeal,
   updateDealStage,
   updateDealLinks,
   createProjectFromDeal,
