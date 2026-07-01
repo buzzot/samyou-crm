@@ -100,10 +100,24 @@
           <% }) %>
         </div>
 
-        <form action="/projects/<%= project.id %>/attachments" method="POST" enctype="multipart/form-data" class="d-flex gap-2 mt-3">
-          <input type="file" name="attachments" class="pnew-input" multiple required>
+        <form action="/projects/<%= project.id %>/attachments" method="POST" enctype="multipart/form-data" class="d-flex gap-2 align-items-center mt-3">
+          <input type="file" name="attachments" id="projectAttachInput" multiple required style="display:none;">
+          <label for="projectAttachInput" class="pnew-btn-cancel" style="cursor:pointer; margin:0;">
+            <i class="bi bi-paperclip"></i>
+            <span id="projectAttachLabel">Choose files</span>
+          </label>
           <button type="submit" class="pnew-btn-save"><i class="bi bi-upload"></i> Upload</button>
         </form>
+        <script>
+          (function(){
+            var inp = document.getElementById('projectAttachInput');
+            var lbl = document.getElementById('projectAttachLabel');
+            if (inp && lbl) inp.addEventListener('change', function(){
+              var n = inp.files ? inp.files.length : 0;
+              lbl.textContent = n ? (n + ' file' + (n===1?'':'s') + ' selected') : 'Choose files';
+            });
+          })();
+        </script>
       </div>
 
       <div class="pnew-card">
@@ -133,26 +147,42 @@
           <% } %>
           <% orderedComments.forEach((c, i) => { %>
             <% const cInitial = (c.author || '?').trim().charAt(0).toUpperCase(); %>
-            <div class="note-item">
-              <div class="note-item-head">
-                <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= cInitial %></span>
-                <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
-                <span class="text-muted small note-item-time"><%= noteTimeAgo(c.postedAt) %></span>
-              </div>
-              <div class="note-bubble">
-                <div class="note-text"><%= c.comment %></div>
-                <% if (c.link) { %>
-                  <a href="<%= c.link %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-link-45deg"></i><%= c.link %></a>
-                <% } %>
-                <% if (c.attachments && c.attachments.length) { %>
-                  <div class="d-flex flex-wrap gap-2 mt-2">
-                    <% c.attachments.forEach(file => { %>
-                      <a href="<%= file.url %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-paperclip"></i><%= file.filename %></a>
-                    <% }) %>
+            <% if (c.type === 'email') { %>
+              <div class="note-item note-item-email">
+                <div class="note-item-head">
+                  <span class="note-avatar note-avatar-email"><i class="bi bi-envelope-fill"></i></span>
+                  <div class="note-email-meta">
+                    <span class="note-email-from"><%= c.author %></span>
+                    <span class="note-email-subj"><%= c.emailSubject || '(no subject)' %></span>
                   </div>
-                <% } %>
+                  <span class="text-muted small note-item-time"><%= noteTimeAgo(c.postedAt) %></span>
+                </div>
+                <div class="note-bubble note-email-bubble">
+                  <div class="note-text" style="white-space: pre-wrap;"><%= c.comment %></div>
+                </div>
               </div>
-            </div>
+            <% } else { %>
+              <div class="note-item">
+                <div class="note-item-head">
+                  <span class="note-avatar <%= noteAvatarClasses[i % noteAvatarClasses.length] %>"><%= cInitial %></span>
+                  <span class="fw-semibold note-author"><%= c.author || 'Someone' %></span>
+                  <span class="text-muted small note-item-time"><%= noteTimeAgo(c.postedAt) %></span>
+                </div>
+                <div class="note-bubble">
+                  <div class="note-text"><%= c.comment %></div>
+                  <% if (c.link) { %>
+                    <a href="<%= c.link %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-link-45deg"></i><%= c.link %></a>
+                  <% } %>
+                  <% if (c.attachments && c.attachments.length) { %>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                      <% c.attachments.forEach(file => { %>
+                        <a href="<%= file.url %>" target="_blank" rel="noopener" class="note-link-chip"><i class="bi bi-paperclip"></i><%= file.filename %></a>
+                      <% }) %>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            <% } %>
           <% }) %>
         </div>
       </div>
@@ -186,6 +216,15 @@
         <div class="pnew-summary-row"><span>Window</span><span><%= windowLabel %></span></div>
         <div class="pnew-summary-row"><span>Files</span><span><%= project.attachments.length %></span></div>
         <div class="pnew-summary-row"><span>Created</span><span><%= fmtCreated(project.createdAt) %></span></div>
+        <div class="pnew-summary-row pnew-summary-row--email">
+          <span>Project email</span>
+          <span class="project-email-chip">
+            <% const _projEmail = 'project-' + project.id + '@' + emailDomain; %>
+            <span class="project-email-addr" id="projEmailAddr"><%= _projEmail %></span>
+            <button type="button" class="project-email-copy" title="Copy address" onclick="(function(btn){navigator.clipboard.writeText(btn.previousElementSibling.textContent).then(function(){btn.innerHTML='<i class=\'bi bi-check-lg\'></i>';setTimeout(function(){btn.innerHTML='<i class=\'bi bi-copy\'></i>';},1500)});})(this)"><i class="bi bi-copy"></i></button>
+          </span>
+        </div>
+        <p class="project-email-hint">Set Reply-To this address when emailing clients — their replies appear here automatically.</p>
       </div>
 
       <div class="pnew-card">

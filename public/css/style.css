@@ -3013,3 +3013,114 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     height: 30px;
   }
 }
+
+/* ── Email threading ───────────────────────────────────────────────── */
+
+/* Email avatar — envelope icon on an amber gradient */
+.note-avatar-email {
+  background: linear-gradient(135deg, oklch(0.72 0.16 75), oklch(0.66 0.17 50));
+  color: #fff;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Email item head — stacks "from" and subject vertically */
+.note-item-email .note-item-head {
+  align-items: flex-start;
+}
+
+.note-email-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.note-email-from {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--crm-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-email-subj {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--crm-muted-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Email bubble — warm amber-tinted surface to distinguish from regular comments */
+.note-email-bubble {
+  background: oklch(0.97 0.025 75);
+  border: 1px solid oklch(0.88 0.06 75);
+  border-left: 3px solid oklch(0.72 0.16 75);
+}
+
+/* Project email address chip in sidebar */
+.pnew-summary-row--email {
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 0.35rem;
+}
+
+.pnew-summary-row--email > span:first-child {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--crm-muted-fg);
+}
+
+.project-email-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--crm-muted);
+  border: 1px solid var(--crm-border);
+  border-radius: 6px;
+  padding: 0.28rem 0.55rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.project-email-addr {
+  font-size: 0.75rem;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: var(--crm-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.project-email-copy {
+  background: none;
+  border: none;
+  padding: 0 0.1rem;
+  color: var(--crm-muted-fg);
+  cursor: pointer;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.project-email-copy:hover {
+  color: var(--crm-accent);
+}
+
+.project-email-hint {
+  font-size: 0.72rem;
+  color: var(--crm-muted-fg);
+  margin: 0.2rem 0 0;
+  line-height: 1.4;
+}

@@ -27,6 +27,7 @@ const contactsRoutes = require('./routes/contacts');
 const dealsRoutes = require('./routes/deals');
 const apiRoutes = require('./routes/api');
 const adminRoutes = require('./routes/admin');
+const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
 
@@ -58,13 +59,16 @@ if (isProd) {
   app.set('trust proxy', 1);
 }
 
-// Make the logged-in user available to all views.
+// Make the logged-in user and email domain available to all views.
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
+  res.locals.emailDomain = process.env.EMAIL_DOMAIN || 'mg.samyoucrm.com';
   next();
 });
 
 app.use(authRoutes);
+// Mailgun inbound webhook — must be before requireAuth (no session cookie)
+app.use(webhookRoutes);
 
 // Everything below requires login.
 app.use(requireAuth);

@@ -196,11 +196,16 @@ function mapProjectActivityRecord(rec) {
 
 function mapTaskComment(rec) {
   const f = pick(rec.fields, T.taskComments.fields);
+  const rawLink = f.link || '';
+  const isEmail = rawLink.startsWith('EMAILSUBJ:');
   return {
     id: rec.id,
     comment: f.comment,
     author: f.author,
-    link: f.link,
+    // 'email' for inbound client emails stored via Mailgun webhook; 'comment' otherwise
+    type: isEmail ? 'email' : 'comment',
+    emailSubject: isEmail ? rawLink.slice('EMAILSUBJ:'.length) : null,
+    link: isEmail ? null : (rawLink || null),
     taskIds: f.task || [],
     activityIds: f.activity || [],
     dealIds: f.deal || [],
