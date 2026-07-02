@@ -2,9 +2,14 @@
 
 const express = require('express');
 const crypto  = require('crypto');
+const multer  = require('multer');
 const crm     = require('../services/crm');
 
 const router = express.Router();
+
+// Mailgun inbound posts as multipart/form-data — use multer to parse it.
+// upload.none() accepts fields but no files.
+const upload = multer();
 
 /**
  * Verify a Mailgun webhook signature.
@@ -20,12 +25,12 @@ function verifyMailgun(timestamp, token, signature) {
   const hmac = crypto.createHmac('sha256', key);
   hmac.update(timestamp + token);
   const expected = hmac.digest('hex');
-  // Constant-time compare
-  try {
-    return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(signature, 'hex'));
-  } catch {
-    return false;
-  }
+  // DEBUG — remove after confirmed working
+  console.log('[webhook/email] timestamp:', timestamp);
+  console.log('[webhook/email] token    :', token);
+  console.log('[webhook/email] expected :', expected);
+  console.log('[webhook/email] received :', signature);
+  return expected === signature;
 }
 
 /**
@@ -46,7 +51,7 @@ function extractProjectId(recipient) {
  * This route must be registered BEFORE the requireAuth middleware
  * because Mailgun calls it without a session cookie.
  */
-router.post('/webhooks/email', async (req, res) => {
+router.post('/webhooks/email', upload.none(), async (req, res) => {
   // Respond 200 immediately — Mailgun retries on anything else.
   res.status(200).send('OK');
 
